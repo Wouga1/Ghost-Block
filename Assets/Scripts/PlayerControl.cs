@@ -4,14 +4,21 @@ using UnityEngine;
 
 public class PlayerControl : MonoBehaviour
 {
-    [SerializeField] float tileSize = 1;
-    [SerializeField] GameControl gameControl;
+    private float tileSize = 1;
+    private GameControl gameControl;
+    private SpriteRenderer spriteRenderer;
+    private Sprite ghostSprite;
 
-    Vector2Int currentPosition;
+    private Vector2Int currentPosition;
+    private bool dead = false;
 
-    private void Start()
+    public void Setup(GameControl _gameControl, Sprite _ghostSprite, Vector2Int _currentPosition, float _tileSize)
     {
-        currentPosition = gameControl.WorldPositionToTilePosition(transform.position);
+        gameControl = _gameControl;
+        ghostSprite = _ghostSprite;
+        currentPosition = _currentPosition;
+        tileSize = _tileSize;
+        spriteRenderer = GetComponent<SpriteRenderer>();
     }
 
     private void Update()
@@ -21,40 +28,26 @@ public class PlayerControl : MonoBehaviour
 
     private void Move()
     {
-        if (Input.GetKeyDown(KeyCode.UpArrow)) {
-            Vector2Int direction = Vector2Int.up;
-            if (gameControl.CanMove(currentPosition, direction))
-            {
-                transform.position += (Vector3)(Vector2)direction * tileSize;
-                currentPosition += direction;
-            }
-        }
-        else if (Input.GetKeyDown(KeyCode.DownArrow))
+        Vector2Int direction;
+        if (Input.GetKeyDown(KeyCode.UpArrow)) direction = Vector2Int.up;
+        else if (Input.GetKeyDown(KeyCode.DownArrow)) direction = Vector2Int.down;
+        else if (Input.GetKeyDown(KeyCode.LeftArrow)) direction = Vector2Int.left;
+        else if (Input.GetKeyDown(KeyCode.RightArrow)) direction = Vector2Int.right;
+        else return;
+
+        if (gameControl.CanMove(currentPosition, direction, !dead))
         {
-            Vector2Int direction = Vector2Int.down;
-            if (gameControl.CanMove(currentPosition, direction))
-            {
-                transform.position += (Vector3)(Vector2)direction * tileSize;
-                currentPosition += direction;
-            }
+            transform.position += (Vector3)(Vector2)direction * tileSize;
+            currentPosition += direction;
+            gameControl.MoveTo(currentPosition, direction);
         }
-        else if (Input.GetKeyDown(KeyCode.LeftArrow))
-        {
-            Vector2Int direction = Vector2Int.left;
-            if (gameControl.CanMove(currentPosition, direction))
-            {
-                transform.position += (Vector3)(Vector2)direction * tileSize;
-                currentPosition += direction;
-            }
-        }
-        else if (Input.GetKeyDown(KeyCode.RightArrow))
-        {
-            Vector2Int direction = Vector2Int.right;
-            if (gameControl.CanMove(currentPosition, direction))
-            {
-                transform.position += (Vector3)(Vector2)direction * tileSize;
-                currentPosition += direction;
-            }
-        }
+    }
+
+    public void Hole()
+    {
+        if (dead) return;
+
+        dead = true;
+        spriteRenderer.sprite = ghostSprite;
     }
 }
