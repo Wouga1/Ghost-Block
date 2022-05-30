@@ -22,6 +22,9 @@ public class GameControl : MonoBehaviour
         {
             LoadLevelNumber(level);
         }
+        if (Input.GetKeyDown(KeyCode.Escape)) {
+            Application.Quit();
+        }
     }
 
     private void LoadLevelNumber(int _num)
